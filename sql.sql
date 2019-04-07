@@ -6,7 +6,6 @@ DROP TABLE IF EXISTS `t_discuss_do_like`;
 DROP TABLE IF EXISTS `t_discuss_comment`;
 DROP TABLE IF EXISTS `t_discuss_image`;
 SET FOREIGN_KEY_CHECKS = 1;
-
 CREATE TABLE `t_user` (
   `mail` varchar(30) NOT NULL,
   `name` varchar(20) NOT NULL,
