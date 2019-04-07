@@ -5,18 +5,19 @@ public class User {
         REGISTERED,
         UNACTIVE
     }
-    private int id;
     private String mail;
     private String name;
     private String passwords;
     private State state;
 
-    public int getId() {
-        return id;
+    public User() {
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public User(String mail, String name, String passwords,State state) {
+        this.mail = mail;
+        this.name = name;
+        this.passwords = passwords;
+        this.state=state;
     }
 
     public String getMail() {

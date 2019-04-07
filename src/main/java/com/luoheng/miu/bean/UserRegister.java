@@ -1,7 +1,6 @@
 package com.luoheng.miu.bean;
 
 public class UserRegister {
-    private int id;
     private String mail;
     private String token;
 
@@ -11,13 +10,6 @@ public class UserRegister {
     public UserRegister(String mail,String token){
         this.mail=mail;
         this.token=token;
-    }
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getMail() {

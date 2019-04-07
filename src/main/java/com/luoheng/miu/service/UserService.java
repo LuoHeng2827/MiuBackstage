@@ -24,8 +24,8 @@ public class UserService {
     private UserDao userDao;
     private UserRegisterDao userRegisterDao;
     Logger logger=Configures.logger;
-    private static final String MAIL_SENDER_ACCOUNT="";
-    private static final String MAIL_SENDER_PASSWORDS="";
+    private static final String MAIL_SENDER_ACCOUNT="Smart_Jarvis@163.com";
+    private static final String MAIL_SENDER_PASSWORDS="cm223001";
 
     public String signUser(User user){
         String token=UUID.randomUUID().toString().replace("-","");
@@ -50,7 +50,7 @@ public class UserService {
             throw new UserNotFoundException("the user who's Mail is " + userRegister.getMail() + " is not exist!");
         }
         user.setState(User.State.REGISTERED);
-        userDao.update(user);
+        userDao.updateUserState(user);
         userRegisterDao.deleteByMail(userRegister.getMail());
         return true;
     }

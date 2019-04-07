@@ -3,25 +3,43 @@ package com.luoheng.miu.bean;
 import java.util.Date;
 
 public class Discuss {
-    private int id;
-    private int authorId;
+    private String id;
+    private String authorMail;
     private String content;
     private Date createDate;
+    private int likeCount;
+    private DiscussImage discussPicture;
 
-    public int getId() {
+    public Discuss(){
+
+    }
+
+    public Discuss(String authorMail, String content, Date createDate){
+        this.authorMail = authorMail;
+        this.content=content;
+        this.createDate=createDate;
+        this.likeCount=0;
+    }
+
+    public Discuss(String authorMail, String content, Date createDate, int likeCount){
+        this(authorMail, content, createDate);
+        this.likeCount=likeCount;
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public int getAuthorId() {
-        return authorId;
+    public String getAuthorMail() {
+        return authorMail;
     }
 
-    public void setAuthorId(int authorId) {
-        this.authorId = authorId;
+    public void setAuthorMail(String authorMail) {
+        this.authorMail = authorMail;
     }
 
     public String getContent() {
@@ -38,5 +56,21 @@ public class Discuss {
 
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
+    }
+
+    public int getLikeCount() {
+        return likeCount;
+    }
+
+    public void setLikeCount(int likeCount) {
+        this.likeCount = likeCount;
+    }
+
+    public DiscussImage getDiscussPicture() {
+        return discussPicture;
+    }
+
+    public void setDiscussPicture(DiscussImage discussPicture) {
+        this.discussPicture = discussPicture;
     }
 }

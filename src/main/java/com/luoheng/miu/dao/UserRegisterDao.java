@@ -1,5 +1,6 @@
 package com.luoheng.miu.dao;
 
+import com.luoheng.miu.Util;
 import com.luoheng.miu.bean.UserRegister;
 import com.luoheng.miu.web.Configures;
 import org.apache.log4j.Logger;
@@ -47,8 +48,8 @@ public class UserRegisterDao extends Dao<UserRegister> {
     }
 
     @Override
-    public UserRegister update(UserRegister userRegister) {
-        return null;
+    public void update(Map<String, String> tp, Map<String, String> cp) {
+
     }
 
     @Override
