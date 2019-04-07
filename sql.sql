@@ -51,4 +51,4 @@ CREATE TABLE `t_discuss_image` (
   `discuss_id` varchar (32) NOT NULL,
   `image_url` varchar(128) NOT NULL,
   FOREIGN KEY (`discuss_id`) REFERENCES `t_discuss`(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
