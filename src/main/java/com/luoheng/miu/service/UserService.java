@@ -24,8 +24,8 @@ public class UserService {
     private UserDao userDao;
     private UserRegisterDao userRegisterDao;
     Logger logger=Configures.logger;
-    private static final String MAIL_SENDER_ACCOUNT="Smart_Jarvis@163.com";
-    private static final String MAIL_SENDER_PASSWORDS="cm223001";
+    private static final String MAIL_SENDER_ACCOUNT="";
+    private static final String MAIL_SENDER_PASSWORDS="";
 
     public String signUser(User user){
         String token=UUID.randomUUID().toString().replace("-","");
