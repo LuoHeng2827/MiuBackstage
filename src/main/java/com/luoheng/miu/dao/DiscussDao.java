@@ -19,9 +19,10 @@ import java.util.Map;
 
 @Repository
 public class DiscussDao extends Dao<Discuss> {
-    private static final String SQL_ADD_DISCUSS="INSERT INTO t_discuss(id,author_mail,content,create_date,like_count) VALUES(?,?,?,?,?)";
+    private static final String SQL_ADD_DISCUSS="INSERT INTO t_discuss(id,author_mail,title,content,create_date) VALUES(?,?,?,?,?)";
     private static final String SQL_UPDATE_DISCUSS="UPDATE t_discuss %s %s";
     private static final String SQL_FIND_DISCUSSES="SELECT * FROM t_discuss %s";
+    private static final String SQL_DELETE_DISCUSSE="DELETE FROM t_discuss %s";
     private JdbcTemplate jdbcTemplate;
     private LobHandler lobHandler;
 
@@ -40,12 +41,37 @@ public class DiscussDao extends Dao<Discuss> {
         updateLikeCount(discussId,discuss.getLikeCount()+1);
     }
 
+    public void addCommentCount(String discussId){
+        Discuss discuss=findById(discussId);
+        updateCommentCount(discussId,discuss.getCommentCount()+1);
+    }
+
     public void updateLikeCount(String discussId,int newLikeCount){
         Map<String,String> tp=new HashMap<>();
         Map<String,String> cp=new HashMap<>();
         tp.put("like_count",newLikeCount+"");
         cp.put("id",discussId+"");
         update(tp,cp);
+    }
+
+    public void updateCommentCount(String discussId,int newCommentCount){
+        Map<String,String> tp=new HashMap<>();
+        Map<String,String> cp=new HashMap<>();
+        tp.put("comment_count",newCommentCount+"");
+        cp.put("id",discussId+"");
+        update(tp,cp);
+    }
+
+    public void updateContent(String discussId,String content){
+        Map<String,String> tp=new HashMap<>();
+        Map<String,String> cp=new HashMap<>();
+        tp.put("content",content);
+        cp.put("id",discussId+"");
+        update(tp,cp);
+    }
+
+    public void deleteAll(){
+        delete(null);
     }
 
     @Override
@@ -57,9 +83,9 @@ public class DiscussDao extends Dao<Discuss> {
             protected void setValues(PreparedStatement ps, LobCreator lobCreator) throws SQLException, DataAccessException {
                 ps.setString(1,discuss.getId());
                 ps.setString(2,discuss.getAuthorMail());
-                lobCreator.setClobAsString(ps,3,discuss.getContent());
-                ps.setTimestamp(4,new Timestamp(discuss.getCreateDate().getTime()));
-                ps.setInt(5,discuss.getLikeCount());
+                ps.setString(3,discuss.getTitle());
+                lobCreator.setClobAsString(ps,4,discuss.getContent());
+                ps.setTimestamp(5,new Timestamp(discuss.getCreateDate().getTime()));
             }
         });
         return discuss;
@@ -74,7 +100,8 @@ public class DiscussDao extends Dao<Discuss> {
 
     @Override
     public void delete(Map<String, String> params) {
-
+        String condition=generateCondition(params);
+        jdbcTemplate.update(String.format(SQL_DELETE_DISCUSSE,condition));
     }
 
     @Override
@@ -86,6 +113,7 @@ public class DiscussDao extends Dao<Discuss> {
             public Discuss mapRow(ResultSet resultSet, int i) throws SQLException {
                 Discuss discuss=new Discuss();
                 discuss.setId(resultSet.getString("id"));
+                discuss.setTitle(resultSet.getString("title"));
                 discuss.setAuthorMail(resultSet.getString("author_mail"));
                 discuss.setContent(lobHandler.getClobAsString(resultSet,"content"));
                 discuss.setCreateDate(new java.util.Date(resultSet.getDate("create_date").getTime()));

@@ -25,4 +25,7 @@
         </mvc:message-converters>
     </mvc:annotation-driven>
 
+    <mvc:resources location="/static/images/" mapping="/discuss/image/**"/>
+    <mvc:resources location="/static/pic/" mapping="/user/pic/**"/>
+
 </beans>

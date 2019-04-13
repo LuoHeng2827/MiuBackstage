@@ -1,6 +1,8 @@
 package com.luoheng.miu.bean;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable {
     public enum State {
         REGISTERED,
         UNACTIVE
@@ -9,6 +11,7 @@ public class User {
     private String name;
     private String passwords;
     private State state;
+    private String picUrl;
 
     public User() {
     }
@@ -59,11 +62,19 @@ public class User {
         this.state = state;
     }
     public void setState(String state){
-        if(state.equals("Registered")){
+        if(state.equalsIgnoreCase("Registered")){
             this.state=State.REGISTERED;
         }
-        else if(state.equals("UnActive")){
+        else if(state.equalsIgnoreCase("UnActive")){
             this.state=State.UNACTIVE;
         }
+    }
+
+    public String getPicUrl() {
+        return picUrl;
+    }
+
+    public void setPicUrl(String picUrl) {
+        this.picUrl = picUrl;
     }
 }

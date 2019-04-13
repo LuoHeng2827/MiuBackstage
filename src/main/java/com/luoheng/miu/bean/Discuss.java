@@ -1,29 +1,34 @@
 package com.luoheng.miu.bean;
 
+import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
-public class Discuss {
+public class Discuss implements Serializable {
     private String id;
     private String authorMail;
+    private String title;
     private String content;
     private Date createDate;
     private int likeCount;
-    private DiscussImage discussPicture;
+    private int commentCount;
+    private List<DiscussImage> discussImageList;
 
-    public Discuss(){
+    public Discuss() {
 
     }
 
-    public Discuss(String authorMail, String content, Date createDate){
+    public Discuss(String authorMail, String title, String content, Date createDate) {
         this.authorMail = authorMail;
-        this.content=content;
-        this.createDate=createDate;
-        this.likeCount=0;
+        this.title=title;
+        this.content = content;
+        this.createDate = createDate;
+        this.likeCount = 0;
     }
 
-    public Discuss(String authorMail, String content, Date createDate, int likeCount){
-        this(authorMail, content, createDate);
-        this.likeCount=likeCount;
+    public Discuss(String authorMail, String title, String content, Date createDate, int likeCount) {
+        this(authorMail, title, content, createDate);
+        this.likeCount = likeCount;
     }
 
     public String getId() {
@@ -40,6 +45,14 @@ public class Discuss {
 
     public void setAuthorMail(String authorMail) {
         this.authorMail = authorMail;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getContent() {
@@ -66,11 +79,19 @@ public class Discuss {
         this.likeCount = likeCount;
     }
 
-    public DiscussImage getDiscussPicture() {
-        return discussPicture;
+    public List<DiscussImage> getDiscussImageList() {
+        return discussImageList;
     }
 
-    public void setDiscussPicture(DiscussImage discussPicture) {
-        this.discussPicture = discussPicture;
+    public void setDiscussImageList(List<DiscussImage> discussImageList) {
+        this.discussImageList = discussImageList;
+    }
+
+    public int getCommentCount() {
+        return commentCount;
+    }
+
+    public void setCommentCount(int commentCount) {
+        this.commentCount = commentCount;
     }
 }

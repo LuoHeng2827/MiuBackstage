@@ -4,8 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.luoheng.miu.Util;
 import com.luoheng.miu.bean.Discuss;
-import com.luoheng.miu.bean.DiscussImage;
-import com.luoheng.miu.dao.DiscussImageDao;
+import com.luoheng.miu.bean.User;
 import com.luoheng.miu.service.DiscussService;
 import com.luoheng.miu.service.UserService;
 import org.apache.log4j.Logger;
@@ -21,31 +20,44 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static com.luoheng.miu.web.Configures.*;
 
 @Controller
 @RequestMapping(value = Configures.MODULE_DISCUSS)
 public class DiscussController {
-    private static final int RESULT_OK=200;
-    private static final int RESULT_REPEAT_DO_LIKE=300;
-    private static final int RESULT_USER_NON_EXISTENT=301;
-    private static final int RESULT_DISCUSS_NON_EXISTENT=302;
-    private static final int RESULT_ACCESS_DENIED=303;
+
     private UserService userService;
     private DiscussService discussService;
-    private DiscussImageDao discussImageDao;
     private Gson gson=new Gson();
     private Logger logger=Configures.logger;
 
-    @RequestMapping(value = "/push",method = RequestMethod.GET)
+    @RequestMapping(value = "/push",method = RequestMethod.POST)
     @ResponseBody
-    public String push(){
+    public String push(@RequestParam(name = "mail")String mail,
+                       @RequestParam(name = "passwords")String passwords){
         JsonObject response=new JsonObject();
+        List<User> authorList=new ArrayList<>();
+        List<String> likedDiscussId=new ArrayList<>();
+        if(!userService.hasUserAvailable(mail,passwords)){
+            response.addProperty("result",RESULT_ACCESS_DENIED);
+            response.addProperty("data","拒绝访问");
+            return response.toString();
+        }
         List<Discuss> discussList=discussService.pushDiscussByLikeCount();
-        String data=gson.toJson(discussList);
+        for(Discuss discuss:discussList){
+            authorList.add(userService.findUser(discuss.getAuthorMail()));
+        }
+        likedDiscussId.addAll(discussService.findUserDoLikeList(mail));
+        JsonObject data=new JsonObject();
+        data.addProperty("discussList",gson.toJson(discussList));
+        data.addProperty("authorList",gson.toJson(authorList));
+        data.addProperty("likedDiscussIdList",gson.toJson(likedDiscussId));
         response.addProperty("result",RESULT_OK);
-        response.addProperty("data",data);
+        response.add("data",data);
         return response.toString();
     }
 
@@ -53,27 +65,31 @@ public class DiscussController {
     @ResponseBody
     public String upload(@RequestParam(name = "authorMail")String authorMail,
                          @RequestParam(name = "passwords")String passwords,
+                         @RequestParam(name = "title")String title,
                          @RequestParam(name = "content")String content,
                          @RequestParam(name = "images",required = false)MultipartFile[] images,
                          HttpServletRequest request) throws IOException {
         JsonObject response=new JsonObject();
+        List<File> fileList=new ArrayList<>();
         String pathRoot = request.getSession().getServletContext().getRealPath("");
-        if(!userService.hasUserExist(authorMail,passwords)){
+        if(!userService.hasUserAvailable(authorMail,passwords)){
             response.addProperty("result",RESULT_ACCESS_DENIED);
+            response.addProperty("data","拒绝访问");
             return response.toString();
         }
-        Discuss discuss=new Discuss(authorMail,content,new Date());
+        Discuss discuss=new Discuss(authorMail,title,content,new Date());
         discuss=discussService.saveDiscuss(discuss);
         for(MultipartFile image:images){
             if(!image.isEmpty()){
                 String fileName=image.getOriginalFilename();
-                String path="/static/images/"+ authorMail +"/"+discuss.getId()+"/"+fileName;
+                String path="/static/images/"+discuss.getId()+"/"+fileName;
                 File file=new File(Util.getRealFilePath(pathRoot+path));
                 file.mkdirs();
                 image.transferTo(file);
-                discussImageDao.add(new DiscussImage(discuss.getId(),pathRoot+path));
+                fileList.add(file);
             }
         }
+        discussService.replaceRealDiscussImage(discuss,fileList);
         response.addProperty("result",RESULT_OK);
         response.addProperty("data","上传成功");
         return response.toString();
@@ -85,7 +101,7 @@ public class DiscussController {
                          @RequestParam(name = "userMail")String userMail,
                          @RequestParam(name = "passwords") String passwords){
         JsonObject response=new JsonObject();
-        if(!userService.hasUserExist(userMail,passwords)){
+        if(!userService.hasUserAvailable(userMail,passwords)){
             response.addProperty("result",RESULT_ACCESS_DENIED);
             response.addProperty("data","访问拒绝");
             return response.toString();
@@ -103,6 +119,31 @@ public class DiscussController {
         }
     }
 
+    @RequestMapping(value = "/deleteAll",method = RequestMethod.POST)
+    @ResponseBody
+    public String deleteAll(@RequestParam(name = "mail") String mail,
+                            @RequestParam(name = "passwords") String passwords,
+                            HttpServletRequest request){
+        User user=userService.findUser(mail, passwords);
+        JsonObject response=new JsonObject();
+        if(user!=null&&user.getMail().equals("luoheng2827@163.com")){
+            String pathRoot = request.getSession().getServletContext().getRealPath("");
+            String path="/static/images/";
+            File file=new File(Util.getRealFilePath(pathRoot+path));
+            if(file.exists())
+                Util.deleteDirectoryAllFile(file.getAbsolutePath());
+            discussService.deleteAll();
+            response.addProperty("result",RESULT_OK);
+            response.addProperty("data","删除成功");
+            return response.toString();
+        }
+        else{
+            response.addProperty("result",RESULT_ACCESS_DENIED);
+            response.addProperty("data","拒绝访问");
+            return response.toString();
+        }
+    }
+
     @RequestMapping(value = "/comment",method = RequestMethod.POST)
     @ResponseBody
     public String comment(@RequestParam(name = "discussId")String discussId,
@@ -110,16 +151,19 @@ public class DiscussController {
                           @RequestParam(name = "passwords")String passwords,
                           @RequestParam(name = "content")String content){
         JsonObject response=new JsonObject();
-        if(!userService.hasUserExist(userId,passwords)){
+        if(!userService.hasUserAvailable(userId,passwords)){
             response.addProperty("result",RESULT_ACCESS_DENIED);
+            response.addProperty("data","拒绝访问");
             return response.toString();
         }
         if(!discussService.hasDiscussExist(discussId)){
             response.addProperty("result",RESULT_DISCUSS_NON_EXISTENT);
+            response.addProperty("data","帖子不存在");
             return response.toString();
         }
         discussService.comment(discussId, userId, content);
         response.addProperty("result",RESULT_OK);
+        response.addProperty("data","评论成功");
         return response.toString();
     }
 
@@ -133,8 +177,4 @@ public class DiscussController {
         this.userService = userService;
     }
 
-    @Autowired
-    public void setDiscussImageDao(DiscussImageDao discussImageDao) {
-        this.discussImageDao = discussImageDao;
-    }
 }

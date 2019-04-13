@@ -17,17 +17,33 @@ import java.util.Map;
 public class DiscussLikeDao extends Dao<DiscussLike> {
     private static final String SQL_ADD_DO_LIKE="INSERT INTO t_discuss_do_like(discuss_id,user_mail) VALUES (?,?);";
     private static final String SQL_FIND_DISCUSS_LIKE ="SELECT * FROM t_discuss_do_like %s";
+    private static final String SQL_DELETE_DISCUSS_LIKE ="DELETE FROM t_discuss_do_like %s";
     private JdbcTemplate jdbcTemplate;
 
-    public List<String> findLikeUserId(String discuss_id){
-        List<String> userIdList=new ArrayList<>();
+    public List<String> findUserMailByDiscussId(String discussId){
+        List<String> userMailList=new ArrayList<>();
         Map<String,String> params=new HashMap<>();
-        params.put("discuss_id",discuss_id);
+        params.put("discuss_id", discussId);
         List<DiscussLike> discussLikeList=find(params);
         for(DiscussLike discussLike:discussLikeList){
-            userIdList.add(discussLike.getUserMail());
+            userMailList.add(discussLike.getUserMail());
         }
-        return userIdList;
+        return userMailList;
+    }
+
+    public List<String> findDiscussIdByUserMail(String userMail){
+        List<String> DiscussIdList=new ArrayList<>();
+        Map<String,String> params=new HashMap<>();
+        params.put("user_mail", userMail);
+        List<DiscussLike> discussLikeList=find(params);
+        for(DiscussLike discussLike:discussLikeList){
+            DiscussIdList.add(discussLike.getDiscussId());
+        }
+        return DiscussIdList;
+    }
+
+    public void deleteAll(){
+        delete(null);
     }
 
     @Override
@@ -43,7 +59,8 @@ public class DiscussLikeDao extends Dao<DiscussLike> {
 
     @Override
     public void delete(Map<String, String> params) {
-
+        String condition=generateCondition(params);
+        jdbcTemplate.update(String.format(SQL_DELETE_DISCUSS_LIKE,condition));
     }
 
     @Override

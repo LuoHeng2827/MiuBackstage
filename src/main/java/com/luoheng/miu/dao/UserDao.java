@@ -15,7 +15,7 @@ import java.util.Map;
 
 @Repository
 public class UserDao extends Dao<User> {
-    private static final String SQL_ADD_USER="INSERT INTO t_user(name,mail,passwords,state) VALUES (?,?,?,?)";
+    private static final String SQL_ADD_USER="INSERT INTO t_user(name,mail,passwords,state,pic_url) VALUES (?,?,?,?,?)";
     private static final String SQL_UPDATE_USER="UPDATE t_user %s %s";
     private static final String SQL_FIND_USERS="SELECT * FROM t_user %s";
     private static String SQL_MATCH_EXIST_USER_COUNT="select count(*) from t_user where Mail=? and passwords=?";
@@ -31,6 +31,14 @@ public class UserDao extends Dao<User> {
         return null;
     }
 
+    public void updatePicUrl(String mail,String picUrl){
+        Map<String,String> tp=new HashMap<>();
+        Map<String,String> cp=new HashMap<>();
+        tp.put("pic_url",picUrl);
+        cp.put("mail",mail);
+        update(tp,cp);
+    }
+
     public void updateUserState(User user){
         Map<String,String> tp=new HashMap<>();
         Map<String,String> cp=new HashMap<>();
@@ -41,7 +49,7 @@ public class UserDao extends Dao<User> {
 
     @Override
     public User add(User user) {
-        Object[] args={user.getName(),user.getMail(),user.getPasswords(),user.getStateString()};
+        Object[] args={user.getName(),user.getMail(),user.getPasswords(),user.getStateString(),user.getPicUrl()};
         jdbcTemplate.update(SQL_ADD_USER,args);
         return user;
     }
@@ -70,6 +78,7 @@ public class UserDao extends Dao<User> {
                 user.setName(resultSet.getString("name"));
                 user.setPasswords(resultSet.getString("passwords"));
                 user.setState(resultSet.getString("state"));
+                user.setPicUrl(resultSet.getString("pic_url"));
                 return user;
             }
         });

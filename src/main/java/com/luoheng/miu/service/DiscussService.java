@@ -2,14 +2,22 @@ package com.luoheng.miu.service;
 
 import com.luoheng.miu.bean.Discuss;
 import com.luoheng.miu.bean.DiscussComment;
+import com.luoheng.miu.bean.DiscussImage;
 import com.luoheng.miu.bean.DiscussLike;
 import com.luoheng.miu.dao.DiscussCommentDao;
 import com.luoheng.miu.dao.DiscussDao;
+import com.luoheng.miu.dao.DiscussImageDao;
 import com.luoheng.miu.dao.DiscussLikeDao;
+import com.luoheng.miu.web.Configures;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -20,6 +28,19 @@ public class DiscussService {
     DiscussDao discussDao;
     DiscussLikeDao discussLikeDao;
     DiscussCommentDao discussCommentDao;
+    DiscussImageDao discussImageDao;
+
+    public void deleteAll(){
+        discussImageDao.deleteAll();
+        discussLikeDao.deleteAll();
+        discussCommentDao.deleteAll();
+        discussDao.deleteAll();
+    }
+
+    public List<String> findUserDoLikeList(String userMail){
+        return discussLikeDao.findDiscussIdByUserMail(userMail);
+    }
+
     public Discuss saveDiscuss(Discuss discuss){
         return discussDao.add(discuss);
     }
@@ -27,14 +48,29 @@ public class DiscussService {
     public void comment(String discussId,String userId,String content){
         DiscussComment discussComment=new DiscussComment(discussId,userId,content,new Date());
         discussCommentDao.add(discussComment);
+        discussDao.addCommentCount(discussId);
     }
 
     public boolean hasUserDoLike(String discussId,String userId){
-        List<String> userIdList=discussLikeDao.findLikeUserId(discussId);
+        List<String> userIdList=discussLikeDao.findUserMailByDiscussId(discussId);
         if(userIdList.contains(userId)){
             return true;
         }
         return false;
+    }
+
+    public void replaceRealDiscussImage(Discuss discuss, List<File> fileList){
+        Document document=Jsoup.parse(discuss.getContent());
+        Elements imgs=document.getElementsByTag("img");
+        for(int i=0;i<imgs.size();i++){
+            Element img=imgs.get(i);
+            String url=Configures.HOST+"/"+Configures.PROJECT_NAME+Configures.MODULE_DISCUSS
+                    +"/image/"+discuss.getId()+"/"+fileList.get(i).getName();
+            img.attr("src",url);
+            discussImageDao.add(new DiscussImage(discuss.getId(),url));
+        }
+        discuss.setContent(document.html());
+        discussDao.updateContent(discuss.getId(),discuss.getContent());
     }
 
     public void doLike(String discussId,String userId){
@@ -45,6 +81,10 @@ public class DiscussService {
 
     public List<Discuss> pushDiscussByLikeCount(){
         List<Discuss> discussList=discussDao.find(null);
+        for(Discuss discuss:discussList){
+            List<DiscussImage> discussImageList=discussImageDao.findByDiscussId(discuss.getId());
+            discuss.setDiscussImageList(discussImageList);
+        }
         discussList.sort(new Comparator<Discuss>() {
             @Override
             public int compare(Discuss o1, Discuss o2) {
@@ -53,7 +93,7 @@ public class DiscussService {
                 else
                     return -1;
             }
-        });
+        }.reversed());
         return discussList;
     }
 
@@ -77,5 +117,10 @@ public class DiscussService {
     @Autowired
     public void setDiscussCommentDao(DiscussCommentDao discussCommentDao) {
         this.discussCommentDao = discussCommentDao;
+    }
+
+    @Autowired
+    public void setDiscussImageDao(DiscussImageDao discussImageDao) {
+        this.discussImageDao = discussImageDao;
     }
 }

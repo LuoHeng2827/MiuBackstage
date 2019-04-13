@@ -1,6 +1,8 @@
 package com.luoheng.miu.bean;
 
-public class DiscussImage {
+import java.io.Serializable;
+
+public class DiscussImage implements Serializable {
     private String discussId;
     private String imageUrl;
 

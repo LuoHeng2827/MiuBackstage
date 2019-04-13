@@ -27,6 +27,10 @@ public class UserService {
     private static final String MAIL_SENDER_ACCOUNT="";
     private static final String MAIL_SENDER_PASSWORDS="";
 
+
+    public void updateUserPic(User user,String picPath){
+        userDao.updatePicUrl(user.getMail(),picPath);
+    }
     public String signUser(User user){
         String token=UUID.randomUUID().toString().replace("-","");
         userDao.add(user);
@@ -62,12 +66,14 @@ public class UserService {
         return userList.size()>0;
     }
 
-    public boolean hasUserExist(String mail, String passwords){
+    public boolean hasUserAvailable(String mail, String passwords){
         Map<String,String> params=new HashMap<>();
         params.put("mail", mail);
         params.put("passwords",passwords);
         List<User> userList=userDao.find(params);
-        return userList.size()>0;
+        if(userList.size()>0&&userList.get(0).getStateString().equalsIgnoreCase("registered"))
+            return true;
+        return false;
     }
 
     public User findUser(String mail, String passwords){
@@ -77,6 +83,19 @@ public class UserService {
         List<User> userList=userDao.find(params);
         if(userList.size()>0){
             return userList.get(0);
+        }
+        else
+            return null;
+    }
+
+    public User findUser(String mail){
+        Map<String,String> params=new HashMap<>();
+        params.put("mail", mail);
+        List<User> userList=userDao.find(params);
+        if(userList.size()>0){
+            User user=userList.get(0);
+            user.setPasswords("");
+            return user;
         }
         else
             return null;
