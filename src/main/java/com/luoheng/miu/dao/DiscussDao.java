@@ -116,7 +116,7 @@ public class DiscussDao extends Dao<Discuss> {
                 discuss.setTitle(resultSet.getString("title"));
                 discuss.setAuthorMail(resultSet.getString("author_mail"));
                 discuss.setContent(lobHandler.getClobAsString(resultSet,"content"));
-                discuss.setCreateDate(new java.util.Date(resultSet.getDate("create_date").getTime()));
+                discuss.setCreateDate(new java.util.Date(resultSet.getTimestamp("create_date").getTime()));
                 discuss.setLikeCount(resultSet.getInt("like_count"));
                 return discuss;
             }

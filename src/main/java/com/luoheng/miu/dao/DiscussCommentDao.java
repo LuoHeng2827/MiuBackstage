@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +21,18 @@ public class DiscussCommentDao extends Dao<DiscussComment> {
     private static final String SQL_DELETE_DISCUSS_COMMENT ="DELETE FROM t_discuss_comment %s";
     private JdbcTemplate jdbcTemplate;
 
+    public int findCommentCount(String discussId){
+        Map<String,String> params=new HashMap<>();
+        params.put("discuss_id",discussId);
+        List<DiscussComment> discussCommentList=find(params);
+        return discussCommentList.size();
+    }
+    public List<DiscussComment> findByDiscussId(String discussId){
+        Map<String,String> params=new HashMap<>();
+        params.put("discuss_id",discussId);
+        List<DiscussComment> discussCommentList=find(params);
+        return discussCommentList;
+    }
     public void deleteAll(){
         delete(null);
     }
@@ -53,7 +66,7 @@ public class DiscussCommentDao extends Dao<DiscussComment> {
                 discussComment.setDiscussId(resultSet.getString("discuss_id"));
                 discussComment.setUserMail(resultSet.getString("user_mail"));
                 discussComment.setContent(resultSet.getString("content"));
-                discussComment.setCreateDate(new Date(resultSet.getDate("date").getTime()));
+                discussComment.setCreateDate(new Date(resultSet.getTimestamp("create_date").getTime()));
                 return discussComment;
             }
         });

@@ -1,9 +1,11 @@
 package com.luoheng.miu.web;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.luoheng.miu.Util;
 import com.luoheng.miu.bean.Discuss;
+import com.luoheng.miu.bean.DiscussComment;
 import com.luoheng.miu.bean.User;
 import com.luoheng.miu.service.DiscussService;
 import com.luoheng.miu.service.UserService;
@@ -32,7 +34,7 @@ public class DiscussController {
 
     private UserService userService;
     private DiscussService discussService;
-    private Gson gson=new Gson();
+    private Gson gson=new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
     private Logger logger=Configures.logger;
 
     @RequestMapping(value = "/push",method = RequestMethod.POST)
@@ -58,6 +60,27 @@ public class DiscussController {
         data.addProperty("likedDiscussIdList",gson.toJson(likedDiscussId));
         response.addProperty("result",RESULT_OK);
         response.add("data",data);
+        return response.toString();
+    }
+
+    @RequestMapping(value = "/getComments",method = RequestMethod.POST)
+    @ResponseBody
+    public String getComments(@RequestParam(name = "mail")String mail,
+                              @RequestParam(name = "passwords")String passwords,
+                              @RequestParam(name = "discussId")String discussId){
+        JsonObject response=new JsonObject();
+        if(!userService.hasUserAvailable(mail,passwords)){
+            response.addProperty("result",RESULT_ACCESS_DENIED);
+            response.addProperty("data","拒绝访问");
+            return response.toString();
+        }
+        List<DiscussComment> discussCommentList=discussService.findAllComment(discussId);
+        for(DiscussComment discussComment:discussCommentList){
+            User user=userService.findUser(discussComment.getUserMail());
+            discussComment.setUserName(user.getName());
+        }
+        response.addProperty("result",RESULT_OK);
+        response.addProperty("data",gson.toJson(discussCommentList));
         return response.toString();
     }
 
@@ -147,11 +170,11 @@ public class DiscussController {
     @RequestMapping(value = "/comment",method = RequestMethod.POST)
     @ResponseBody
     public String comment(@RequestParam(name = "discussId")String discussId,
-                          @RequestParam(name = "userMail")String userId,
+                          @RequestParam(name = "mail")String mail,
                           @RequestParam(name = "passwords")String passwords,
                           @RequestParam(name = "content")String content){
         JsonObject response=new JsonObject();
-        if(!userService.hasUserAvailable(userId,passwords)){
+        if(!userService.hasUserAvailable(mail,passwords)){
             response.addProperty("result",RESULT_ACCESS_DENIED);
             response.addProperty("data","拒绝访问");
             return response.toString();
@@ -161,7 +184,7 @@ public class DiscussController {
             response.addProperty("data","帖子不存在");
             return response.toString();
         }
-        discussService.comment(discussId, userId, content);
+        discussService.comment(discussId, mail, content);
         response.addProperty("result",RESULT_OK);
         response.addProperty("data","评论成功");
         return response.toString();

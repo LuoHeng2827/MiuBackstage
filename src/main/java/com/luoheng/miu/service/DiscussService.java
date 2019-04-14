@@ -1,9 +1,6 @@
 package com.luoheng.miu.service;
 
-import com.luoheng.miu.bean.Discuss;
-import com.luoheng.miu.bean.DiscussComment;
-import com.luoheng.miu.bean.DiscussImage;
-import com.luoheng.miu.bean.DiscussLike;
+import com.luoheng.miu.bean.*;
 import com.luoheng.miu.dao.DiscussCommentDao;
 import com.luoheng.miu.dao.DiscussDao;
 import com.luoheng.miu.dao.DiscussImageDao;
@@ -18,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -35,6 +33,11 @@ public class DiscussService {
         discussLikeDao.deleteAll();
         discussCommentDao.deleteAll();
         discussDao.deleteAll();
+    }
+
+    public List<DiscussComment> findAllComment(String discussId){
+        List<DiscussComment> discussCommentList=discussCommentDao.findByDiscussId(discussId);
+        return discussCommentList;
     }
 
     public List<String> findUserDoLikeList(String userMail){
@@ -83,6 +86,8 @@ public class DiscussService {
         List<Discuss> discussList=discussDao.find(null);
         for(Discuss discuss:discussList){
             List<DiscussImage> discussImageList=discussImageDao.findByDiscussId(discuss.getId());
+            int commentCount=discussCommentDao.findCommentCount(discuss.getId());
+            discuss.setCommentCount(commentCount);
             discuss.setDiscussImageList(discussImageList);
         }
         discussList.sort(new Comparator<Discuss>() {

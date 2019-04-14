@@ -1,6 +1,7 @@
 package com.luoheng.miu.web;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.luoheng.miu.Util;
 import com.luoheng.miu.bean.User;
@@ -22,7 +23,7 @@ import static com.luoheng.miu.web.Configures.*;
 @RequestMapping(value = Configures.MODULE_USER)
 public class UserController {
     private UserService userService;
-    private Gson gson=new Gson();
+    private Gson gson=new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
     private Logger logger=Configures.logger;
     @Autowired
     public void setUserService(UserService userService) {
@@ -126,7 +127,7 @@ public class UserController {
         }
         User user=userService.findUser(mail, passwords);
         String contentType=pic.getContentType();
-        String path="/static/pic/"+mail+"."+contentType.substring(contentType.lastIndexOf("/")+1);
+        String path="/static/pic/"+mail+".jpg";
         File file=new File(Util.getRealFilePath(pathRoot+path));
         if(file.exists()){
             file.delete();
