@@ -45,7 +45,12 @@ public class UserService {
     public void sendActiveMail(String to,String token){
         String url=Configures.HOST+"/"+Configures.PROJECT_NAME+Configures.MODULE_USER+"/activeUser?token="+token;
         Mail mail=new Mail(MAIL_SENDER_ACCOUNT,to,"激活账户",url,MAIL_SENDER_PASSWORDS);
-        LMailer.sendEmail(mail);
+        LMailer.sendEmail(mail,true);
+    }
+
+    public static void main(String[] args) {
+        Mail mail=new Mail(MAIL_SENDER_ACCOUNT,"luoheng2827@163.com","激活账户","test",MAIL_SENDER_PASSWORDS);
+        LMailer.sendEmail(mail,true);
     }
 
     public boolean activeUser(String token) throws UserNotFoundException{

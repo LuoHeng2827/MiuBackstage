@@ -18,30 +18,50 @@ public class LMailer {
     private static final String SMTP_HOST = "smtp.163.com";
 
     // SMTP邮件服务器默认端口
-    private static final String SMTP_PORT = "25";
+    private static final String SMTP_PORT_25 = "25";
+    private static final String SMTP_PORT_465 = "465";
 
     // 是否要求身份认证
     private static final String IS_AUTH = "true";
     // 是否启用调试模式（启用调试模式可打印客户端与服务器交互过程时一问一答的响应消息）
-    private static final String IS_ENABLED_DEBUG_MOD = "true";
+    private static final String ENABLED_DEBUG_MOD = "true";
     private static final Logger logger=Logger.getLogger(LMailer.class);
     private static final String CLASS_PATH=LMailer.class.getResource("/").getPath();
     private static Properties sessionProps;
     static{
         PropertyConfigurator.configure(CLASS_PATH+"log4j.properties");
-        sessionProps=new Properties();
+    }
+    public static void main(String[] args) {
+
+    }
+
+    public static Properties buildSessionProperties(){
+        Properties sessionProps=new Properties();
         sessionProps.setProperty("mail.transport.protocol",PROTOCOL_SMTP);
         sessionProps.setProperty("mail.smtp.host",SMTP_HOST);
-        sessionProps.setProperty("mail.smtp.port",SMTP_PORT);
+        sessionProps.setProperty("mail.smtp.port", SMTP_PORT_25);
         sessionProps.setProperty("mail.smtp.auth",IS_AUTH);
-        sessionProps.setProperty("mail.debug",IS_ENABLED_DEBUG_MOD);
-    }
-    public static void main(String[] args){
-
+        sessionProps.setProperty("mail.debug", ENABLED_DEBUG_MOD);
+        return sessionProps;
     }
 
-    public static void sendEmail(Mail mail){
+    public  static Properties buildSSLSessionProperties(){
+        Properties sessionProps=new Properties();
+        sessionProps.put("mail.smtp.ssl.enable", true);
+        sessionProps.setProperty("mail.transport.protocol",PROTOCOL_SMTP);
+        sessionProps.setProperty("mail.smtp.host",SMTP_HOST);
+        sessionProps.setProperty("mail.smtp.port", SMTP_PORT_465);
+        sessionProps.setProperty("mail.smtp.auth",IS_AUTH);
+        sessionProps.setProperty("mail.debug", ENABLED_DEBUG_MOD);
+        return sessionProps;
+    }
+
+    public static void sendEmail(Mail mail,boolean isSSL){
         try{
+            if(isSSL)
+                sessionProps=buildSSLSessionProperties();
+            else
+                sessionProps=buildSessionProperties();
             Session session=Session.getDefaultInstance(sessionProps);
             MimeMessage mimeMessage=new MimeMessage(session);
             mimeMessage.setFrom(new InternetAddress(mail.getFrom()));
