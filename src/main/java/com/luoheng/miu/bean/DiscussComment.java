@@ -8,8 +8,9 @@ public class DiscussComment {
     private String content;
     private Date createDate;
 
-    //
+    //非数据库属性
     private String userName;
+    private String userPic;
     public DiscussComment() {
     }
 
@@ -58,5 +59,13 @@ public class DiscussComment {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public String getUserPic() {
+        return userPic;
+    }
+
+    public void setUserPic(String userPic) {
+        this.userPic = userPic;
     }
 }

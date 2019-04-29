@@ -2,10 +2,14 @@ package com.luoheng.miu.web;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.luoheng.miu.Util;
+import com.luoheng.miu.bean.Discuss;
+import com.luoheng.miu.bean.DiscussComment;
 import com.luoheng.miu.bean.User;
 import com.luoheng.miu.bean.UserNotFoundException;
+import com.luoheng.miu.service.DiscussService;
 import com.luoheng.miu.service.UserService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import static com.luoheng.miu.web.Configures.*;
 
@@ -23,6 +28,7 @@ import static com.luoheng.miu.web.Configures.*;
 @RequestMapping(value = Configures.MODULE_USER)
 public class UserController {
     private UserService userService;
+    private DiscussService discussService;
     private Gson gson=new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
     private Logger logger=Configures.logger;
     @Autowired
@@ -30,6 +36,53 @@ public class UserController {
         this.userService = userService;
     }
 
+    @Autowired
+    public void setDiscussService(DiscussService discussService) {
+        this.discussService = discussService;
+    }
+
+    @RequestMapping(value = "/myComments",method = RequestMethod.POST)
+    @ResponseBody
+    public String myComments(@RequestParam(name = "mail")String mail,
+                             @RequestParam(name = "passwords")String passwords){
+        JsonObject response=new JsonObject();
+        if(!userService.hasUserAvailable(mail,passwords)){
+            response.addProperty("result",RESULT_ACCESS_DENIED);
+            response.addProperty("data","拒绝访问");
+            return response.toString();
+        }
+        JsonArray array=new JsonArray();
+        List<DiscussComment> discussCommentList=discussService.findAllCommentByUserMail(mail);
+        for(int i=0;i<discussCommentList.size();i++){
+            JsonObject object=new JsonObject();
+            DiscussComment discussComment=discussCommentList.get(i);
+            Discuss discuss=discussService.findDiscussById(discussComment.getDiscussId());
+            User author=userService.findUser(discuss.getAuthorMail());
+            object.addProperty("comment",discussComment.getContent());
+            object.addProperty("title",discuss.getTitle());
+            object.addProperty("authorName",author.getName());
+            array.add(object);
+        }
+        response.addProperty("result",RESULT_OK);
+        response.add("data",array);
+        return response.toString();
+    }
+
+    @RequestMapping(value = "/getLikedDiscuss",method = RequestMethod.POST)
+    @ResponseBody
+    public String getLikedDiscuss(@RequestParam(name = "mail")String mail,
+                                  @RequestParam(name = "passwords")String passwords){
+        JsonObject response=new JsonObject();
+        if(!userService.hasUserAvailable(mail,passwords)){
+            response.addProperty("result",RESULT_ACCESS_DENIED);
+            response.addProperty("data","拒绝访问");
+            return response.toString();
+        }
+        List<Discuss> discussList=discussService.findLikedDiscuss(mail);
+        response.addProperty("result",RESULT_OK);
+        response.addProperty("data",gson.toJson(discussList));
+        return response.toString();
+    }
 
 
     @RequestMapping(value = "/signIn",method = RequestMethod.POST)
@@ -110,6 +163,24 @@ public class UserController {
             response.addProperty("data","系统出错，请联系管理员");
             return response.toString();
         }
+    }
+
+    @RequestMapping(value = "/accountSetting")
+    @ResponseBody
+    public String accountSetting(@RequestParam(name = "mail")String mail,
+                                 @RequestParam(name = "name")String name,
+                                 @RequestParam(name = "oldPasswords")String oldPasswords,
+                                 @RequestParam(name = "newPasswords")String newPasswords){
+        JsonObject response=new JsonObject();
+        if(!userService.hasUserAvailable(mail,oldPasswords)){
+            response.addProperty("result",RESULT_ACCESS_DENIED);
+            response.addProperty("data","访问拒绝");
+            return response.toString();
+        }
+        userService.updateUser(mail,name,newPasswords);
+        response.addProperty("result",RESULT_OK);
+        response.addProperty("data","更改成功");
+        return response.toString();
     }
 
     @RequestMapping(value = "/uploadPic",method = RequestMethod.POST)

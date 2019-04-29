@@ -21,12 +21,21 @@ public class DiscussCommentDao extends Dao<DiscussComment> {
     private static final String SQL_DELETE_DISCUSS_COMMENT ="DELETE FROM t_discuss_comment %s";
     private JdbcTemplate jdbcTemplate;
 
+
     public int findCommentCount(String discussId){
         Map<String,String> params=new HashMap<>();
         params.put("discuss_id",discussId);
         List<DiscussComment> discussCommentList=find(params);
         return discussCommentList.size();
     }
+
+    public List<DiscussComment> findByUserMail(String userMail){
+        Map<String,String> params=new HashMap<>();
+        params.put("user_mail",userMail);
+        List<DiscussComment> discussCommentList=find(params);
+        return discussCommentList;
+    }
+
     public List<DiscussComment> findByDiscussId(String discussId){
         Map<String,String> params=new HashMap<>();
         params.put("discuss_id",discussId);

@@ -35,8 +35,27 @@ public class DiscussService {
         discussDao.deleteAll();
     }
 
-    public List<DiscussComment> findAllComment(String discussId){
+    public Discuss findDiscussById(String discussId){
+        Discuss discuss=discussDao.findById(discussId);
+        return discuss;
+    }
+
+    public List<Discuss> findLikedDiscuss(String mail){
+        List<String> discussIdList=discussLikeDao.findDiscussIdByUserMail(mail);
+        List<Discuss> discussList=new ArrayList<>();
+        for(String discussId:discussIdList){
+            discussList.add(discussDao.findById(discussId));
+        }
+        return discussList;
+    }
+
+    public List<DiscussComment> findAllCommentByDiscussId(String discussId){
         List<DiscussComment> discussCommentList=discussCommentDao.findByDiscussId(discussId);
+        return discussCommentList;
+    }
+
+    public List<DiscussComment> findAllCommentByUserMail(String userMail){
+        List<DiscussComment> discussCommentList=discussCommentDao.findByUserMail(userMail);
         return discussCommentList;
     }
 

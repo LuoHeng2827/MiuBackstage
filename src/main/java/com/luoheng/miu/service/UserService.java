@@ -27,6 +27,9 @@ public class UserService {
     private static final String MAIL_SENDER_ACCOUNT="";
     private static final String MAIL_SENDER_PASSWORDS="";
 
+    public void updateUser(String mail,String name,String passwords){
+        userDao.updateUser(mail, name, passwords);
+    }
 
     public void updateUserPic(User user,String picPath){
         userDao.updatePicUrl(user.getMail(),picPath);

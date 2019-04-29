@@ -15,7 +15,8 @@ import java.util.Map;
 
 @Repository
 public class UserDao extends Dao<User> {
-    private static final String SQL_ADD_USER="INSERT INTO t_user(name,mail,passwords,state,pic_url) VALUES (?,?,?,?,?)";
+    private static final String SQL_ADD_USER="INSERT INTO t_user(name,mail,passwords,state,pic_url)" +
+            " VALUES (?,?,?,?,?)";
     private static final String SQL_UPDATE_USER="UPDATE t_user %s %s";
     private static final String SQL_FIND_USERS="SELECT * FROM t_user %s";
     private static String SQL_MATCH_EXIST_USER_COUNT="select count(*) from t_user where Mail=? and passwords=?";
@@ -29,6 +30,15 @@ public class UserDao extends Dao<User> {
         if(userList.size()>0)
             return userList.get(0);
         return null;
+    }
+
+    public void updateUser(String mail,String name,String passwords){
+        Map<String,String> tp=new HashMap<>();
+        Map<String,String> cp=new HashMap<>();
+        tp.put("name",name);
+        tp.put("passwords",passwords);
+        cp.put("mail",mail);
+        update(tp,cp);
     }
 
     public void updatePicUrl(String mail,String picUrl){

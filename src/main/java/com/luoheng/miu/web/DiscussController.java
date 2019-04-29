@@ -37,6 +37,8 @@ public class DiscussController {
     private Gson gson=new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
     private Logger logger=Configures.logger;
 
+
+
     @RequestMapping(value = "/push",method = RequestMethod.POST)
     @ResponseBody
     public String push(@RequestParam(name = "mail")String mail,
@@ -74,10 +76,11 @@ public class DiscussController {
             response.addProperty("data","拒绝访问");
             return response.toString();
         }
-        List<DiscussComment> discussCommentList=discussService.findAllComment(discussId);
+        List<DiscussComment> discussCommentList=discussService.findAllCommentByDiscussId(discussId);
         for(DiscussComment discussComment:discussCommentList){
             User user=userService.findUser(discussComment.getUserMail());
             discussComment.setUserName(user.getName());
+            discussComment.setUserPic(user.getPicUrl());
         }
         response.addProperty("result",RESULT_OK);
         response.addProperty("data",gson.toJson(discussCommentList));
